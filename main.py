@@ -1,5 +1,6 @@
 import os
 from tools import logger, logger_params
+import types
 
 def test_1():
 
@@ -77,8 +78,41 @@ def test_2():
         for item in (4.3, 2.2, 6.5):
             assert str(item) in log_file_content, f'{item} должен быть записан в файл'
 
+def test_3():
+    
+    @logger_params("my_func_logging.log")
+    def flat_generator(list_of_lists):
+        cursor = 0
+        inner_cursor = 0
+        while cursor < len(list_of_lists):
+            if inner_cursor < len(list_of_lists[cursor]):
+                item = list_of_lists[cursor][inner_cursor]
+                inner_cursor += 1
+                yield item
+            else:
+                cursor += 1
+                inner_cursor = 0
+
+    list_of_lists_1 = [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f', 'h', False],
+        [1, 2, None]
+    ]
+
+    for flat_iterator_item, check_item in zip(
+            flat_generator(list_of_lists_1),
+            ['a', 'b', 'c', 'd', 'e', 'f', 'h', False, 1, 2, None]
+    ):
+
+        assert flat_iterator_item == check_item
+
+    assert list(flat_generator(list_of_lists_1)) == ['a', 'b', 'c', 'd', 'e', 'f', 'h', False, 1, 2, None]
+
+    assert isinstance(flat_generator(list_of_lists_1), types.GeneratorType)
+ 
 
 if __name__ == '__main__':
     test_1()
     test_2()
+    test_3()
 
